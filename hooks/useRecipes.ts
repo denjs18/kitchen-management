@@ -22,12 +22,15 @@ export function useRecipes(inventory: InventoryItem[]) {
     return unsub;
   }, []);
 
-  // Charge les recettes par défaut si la collection est vide
+  // Seeding incrémental : ajoute uniquement les recettes par défaut absentes de Firestore
   const seedDefaultRecipes = async () => {
+    if (seeded) return;
+    setSeeded(true);
     const snap = await getDocs(collection(db, 'recipes'));
-    if (snap.empty && !seeded) {
-      setSeeded(true);
-      await Promise.all(DEFAULT_RECIPES.map(r => addDoc(collection(db, 'recipes'), r)));
+    const existingNames = new Set(snap.docs.map(d => (d.data().name as string).toLowerCase()));
+    const missing = DEFAULT_RECIPES.filter(r => !existingNames.has(r.name.toLowerCase()));
+    if (missing.length > 0) {
+      await Promise.all(missing.map(r => addDoc(collection(db, 'recipes'), r)));
     }
   };
 
