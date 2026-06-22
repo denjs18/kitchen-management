@@ -14,6 +14,10 @@ const LOCATIONS: { value: FoodLocation; label: string; emoji: string; color: str
   { value: 'sec', label: 'Sec', emoji: '🗄️', color: 'bg-amber-500' },
 ];
 
+function toDateInputValue(date: Date): string {
+  return date.toISOString().split('T')[0];
+}
+
 export default function FoodSearchModal({ onAdd, onClose }: Props) {
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState<FoodItem | null>(null);
@@ -24,9 +28,15 @@ export default function FoodSearchModal({ onAdd, onClose }: Props) {
   const [customCategory, setCustomCategory] = useState(FOOD_CATEGORIES[0]);
   const [customUnit, setCustomUnit] = useState<FoodUnit>('unité');
   const [customEmoji, setCustomEmoji] = useState('🍽️');
+  const [purchaseDateStr, setPurchaseDateStr] = useState('');
+  const [expiryDateStr, setExpiryDateStr] = useState('');
+  const [showDates, setShowDates] = useState(false);
   const results = searchFoods(query);
 
   const handleAdd = () => {
+    const purchaseDate = purchaseDateStr ? new Date(purchaseDateStr) : undefined;
+    const expiryDate = expiryDateStr ? new Date(expiryDateStr) : undefined;
+
     if (isCustom) {
       if (!customName.trim()) return;
       onAdd({
@@ -36,6 +46,8 @@ export default function FoodSearchModal({ onAdd, onClose }: Props) {
         location,
         quantity,
         unit: customUnit,
+        purchaseDate,
+        expiryDate,
       });
     } else {
       if (!selected) return;
@@ -46,6 +58,8 @@ export default function FoodSearchModal({ onAdd, onClose }: Props) {
         location,
         quantity,
         unit: selected.unit,
+        purchaseDate,
+        expiryDate,
       });
     }
     onClose();
@@ -164,7 +178,7 @@ export default function FoodSearchModal({ onAdd, onClose }: Props) {
         </div>
 
         {/* ─── Quantité ─── */}
-        <div className="flex items-center gap-4 mb-5">
+        <div className="flex items-center gap-4 mb-4">
           <button
             onClick={() => setQuantity(q => Math.max(1, q - 1))}
             className="w-12 h-12 rounded-full bg-gray-100 text-gray-700 text-2xl font-bold flex items-center justify-center"
@@ -180,6 +194,40 @@ export default function FoodSearchModal({ onAdd, onClose }: Props) {
             className="w-12 h-12 rounded-full bg-gray-100 text-gray-700 text-2xl font-bold flex items-center justify-center"
           >+</button>
         </div>
+
+        {/* ─── Dates (optionnelles) ─── */}
+        <button
+          onClick={() => setShowDates(v => !v)}
+          className="w-full text-sm text-gray-400 mb-3 text-left flex items-center gap-1"
+        >
+          <span className={`transition-transform ${showDates ? 'rotate-90' : ''}`}>▶</span>
+          Dates (optionnel)
+          {expiryDateStr && <span className="ml-auto text-orange-500 font-medium">📅 {expiryDateStr}</span>}
+        </button>
+
+        {showDates && (
+          <div className="grid grid-cols-2 gap-3 mb-4 bg-gray-50 rounded-2xl p-3">
+            <div>
+              <label className="text-xs text-gray-400 block mb-1">Date d&apos;achat</label>
+              <input
+                type="date"
+                value={purchaseDateStr}
+                max={toDateInputValue(new Date())}
+                onChange={e => setPurchaseDateStr(e.target.value)}
+                className="w-full border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+              />
+            </div>
+            <div>
+              <label className="text-xs text-gray-400 block mb-1">Date de péremption</label>
+              <input
+                type="date"
+                value={expiryDateStr}
+                onChange={e => setExpiryDateStr(e.target.value)}
+                className="w-full border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+              />
+            </div>
+          </div>
+        )}
 
         <button
           onClick={handleAdd}

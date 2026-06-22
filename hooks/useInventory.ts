@@ -13,7 +13,16 @@ export function useInventory() {
   useEffect(() => {
     const q = query(collection(db, 'inventory'), orderBy('updatedAt', 'desc'));
     const unsub = onSnapshot(q, (snap) => {
-      setInventory(snap.docs.map(d => ({ id: d.id, ...d.data() } as InventoryItem)));
+      setInventory(snap.docs.map(d => {
+        const data = d.data();
+        return {
+          id: d.id,
+          ...data,
+          updatedAt: data.updatedAt?.toDate?.() ?? new Date(),
+          purchaseDate: data.purchaseDate?.toDate?.() ?? undefined,
+          expiryDate: data.expiryDate?.toDate?.() ?? undefined,
+        } as InventoryItem;
+      }));
       setLoading(false);
     });
     return unsub;

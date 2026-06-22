@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 const TABS = [
   { href: '/aliments', label: 'Aliments', emoji: '📦' },
   { href: '/recettes', label: 'Recettes', emoji: '🍳' },
+  { href: '/dashboard', label: 'Dashboard', emoji: '📊' },
 ];
 
 export default function BottomNav() {

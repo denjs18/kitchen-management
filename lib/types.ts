@@ -19,6 +19,8 @@ export interface InventoryItem {
   quantity: number;
   unit: FoodUnit;
   updatedAt: Date;
+  purchaseDate?: Date;
+  expiryDate?: Date;
 }
 
 export interface RecipeIngredient {

@@ -4,6 +4,7 @@ import { useInventory } from '@/hooks/useInventory';
 import InventoryGrid from '@/components/InventoryGrid';
 import FoodSearchModal from '@/components/FoodSearchModal';
 import { FoodLocation } from '@/lib/types';
+import { getExpiryStatus } from '@/lib/expiryUtils';
 
 const TABS: { value: FoodLocation; label: string; emoji: string; gradient: string }[] = [
   { value: 'frigo', label: 'Frigo', emoji: '❄️', gradient: 'from-cyan-400 to-blue-500' },
@@ -16,6 +17,11 @@ export default function AlimentsPage() {
   const [tab, setTab] = useState<FoodLocation>('frigo');
   const [showModal, setShowModal] = useState(false);
   const current = TABS.find(t => t.value === tab)!;
+
+  const urgentItems = inventory.filter(i => {
+    const s = getExpiryStatus(i.expiryDate);
+    return s === 'expired' || s === 'soon';
+  });
 
   if (loading) return (
     <div className="flex items-center justify-center h-screen">
@@ -52,6 +58,30 @@ export default function AlimentsPage() {
           ))}
         </div>
       </div>
+
+      {/* Bandeau d'alerte péremption */}
+      {urgentItems.length > 0 && (
+        <div className="mx-4 mt-4 bg-orange-50 border border-orange-200 rounded-2xl p-3">
+          <p className="text-sm font-semibold text-orange-700 mb-2">
+            ⚠️ {urgentItems.length} aliment{urgentItems.length > 1 ? 's' : ''} à consommer rapidement
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {urgentItems.map(item => {
+              const isExpired = getExpiryStatus(item.expiryDate) === 'expired';
+              return (
+                <span
+                  key={item.id}
+                  className={`text-xs px-2 py-1 rounded-full font-medium ${
+                    isExpired ? 'bg-red-100 text-red-600' : 'bg-orange-100 text-orange-600'
+                  }`}
+                >
+                  {item.emoji} {item.foodName}
+                </span>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Content */}
       <InventoryGrid
