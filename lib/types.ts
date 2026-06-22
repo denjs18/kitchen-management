@@ -23,6 +23,19 @@ export interface InventoryItem {
   expiryDate?: Date;
 }
 
+export interface ShoppingItem {
+  id?: string;
+  foodId?: string;
+  foodName: string;
+  emoji: string;
+  category: string;
+  quantity: number;
+  unit: FoodUnit;
+  checked: boolean;
+  addedAt: Date;
+  fromRecipe?: string;
+}
+
 export interface RecipeIngredient {
   foodId: string;
   foodName: string;

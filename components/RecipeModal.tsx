@@ -8,11 +8,12 @@ interface Props {
   onClose: () => void;
   onSave: (id: string, data: Partial<Recipe>) => void;
   onDelete: (id: string) => void;
+  onAddMissingToList?: () => void;
 }
 
 const RECIPE_CATEGORIES: RecipeCategory[] = ['Apéro', 'Entrées', 'Plats', 'Desserts', 'Snacks', 'Boissons'];
 
-export default function RecipeModal({ recipe, onClose, onSave, onDelete }: Props) {
+export default function RecipeModal({ recipe, onClose, onSave, onDelete, onAddMissingToList }: Props) {
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(recipe.name);
   const [emoji, setEmoji] = useState(recipe.emoji);
@@ -222,6 +223,22 @@ export default function RecipeModal({ recipe, onClose, onSave, onDelete }: Props
               )}
             </ol>
           </div>
+
+          {/* Ajouter les manquants à la liste de courses */}
+          {!editing && recipe.missingIngredients.length > 0 && onAddMissingToList && (
+            <div className="bg-orange-50 border border-orange-100 rounded-2xl p-4">
+              <p className="text-sm text-orange-700 font-medium mb-2">
+                ❌ {recipe.missingIngredients.length} ingrédient{recipe.missingIngredients.length > 1 ? 's' : ''} manquant{recipe.missingIngredients.length > 1 ? 's' : ''}
+              </p>
+              <p className="text-xs text-orange-500 mb-3">{recipe.missingIngredients.join(', ')}</p>
+              <button
+                onClick={() => { onAddMissingToList(); onClose(); }}
+                className="w-full bg-orange-500 text-white py-2.5 rounded-xl text-sm font-bold"
+              >
+                🛒 Ajouter à la liste de courses
+              </button>
+            </div>
+          )}
 
           {/* Supprimer */}
           {!editing && (

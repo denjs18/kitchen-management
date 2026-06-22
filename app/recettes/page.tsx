@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useInventory } from '@/hooks/useInventory';
 import { useRecipes } from '@/hooks/useRecipes';
+import { useShoppingList } from '@/hooks/useShoppingList';
 import RecipeModal from '@/components/RecipeModal';
 import { Recipe, RecipeWithScore, RecipeCategory } from '@/lib/types';
 import { FOOD_DATABASE } from '@/lib/foodDatabase';
@@ -19,6 +20,7 @@ const CATEGORIES: { value: RecipeCategory | 'Tout'; label: string; emoji: string
 export default function RecettesPage() {
   const { inventory } = useInventory();
   const { loading, addRecipe, updateRecipe, deleteRecipe, getMatchedRecipes, seedDefaultRecipes } = useRecipes(inventory);
+  const { addItems } = useShoppingList();
   const [category, setCategory] = useState<RecipeCategory | 'Tout'>('Tout');
   const [selected, setSelected] = useState<RecipeWithScore | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
@@ -166,6 +168,22 @@ export default function RecettesPage() {
           onClose={() => setSelected(null)}
           onSave={(id, data) => { updateRecipe(id, data); setSelected(null); }}
           onDelete={(id) => { deleteRecipe(id); setSelected(null); }}
+          onAddMissingToList={() => {
+            const items = selected.missingIngredients.map(name => {
+              const food = FOOD_DATABASE.find(f => f.name === name);
+              const ing = selected.ingredients.find(i => i.foodName === name);
+              return {
+                foodId: food?.id,
+                foodName: name,
+                emoji: food?.emoji ?? '🛒',
+                category: food?.category ?? 'Autre',
+                quantity: ing?.quantity ?? 1,
+                unit: ing?.unit ?? 'unité' as const,
+                fromRecipe: selected.name,
+              };
+            });
+            addItems(items);
+          }}
         />
       )}
     </>
