@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useInventory } from '@/hooks/useInventory';
 import InventoryGrid from '@/components/InventoryGrid';
 import FoodSearchModal from '@/components/FoodSearchModal';
+import MultiScanModal from '@/components/MultiScanModal';
 import { FoodLocation } from '@/lib/types';
 import { getExpiryStatus } from '@/lib/expiryUtils';
 
@@ -16,6 +17,7 @@ export default function AlimentsPage() {
   const { loading, addItem, updateQuantity, getByLocation, inventory } = useInventory();
   const [tab, setTab] = useState<FoodLocation>('frigo');
   const [showModal, setShowModal] = useState(false);
+  const [showMultiScan, setShowMultiScan] = useState(false);
   const current = TABS.find(t => t.value === tab)!;
 
   const urgentItems = inventory.filter(i => {
@@ -36,7 +38,15 @@ export default function AlimentsPage() {
     <>
       {/* Header avec gradient */}
       <div className={`bg-gradient-to-r ${current.gradient} px-5 pt-12 pb-6`}>
-        <h1 className="text-white font-bold text-2xl mb-1">📦 Mon garde-manger</h1>
+        <div className="flex items-center justify-between mb-1">
+          <h1 className="text-white font-bold text-2xl">📦 Mon garde-manger</h1>
+          <button
+            onClick={() => setShowMultiScan(true)}
+            className="bg-white/20 text-white text-sm font-semibold px-3 py-1.5 rounded-full flex items-center gap-1.5"
+          >
+            📷 Multi-scan
+          </button>
+        </div>
         <p className="text-white/70 text-sm">{inventory.length} aliment{inventory.length > 1 ? 's' : ''} en stock</p>
 
         {/* Tabs */}
@@ -103,6 +113,13 @@ export default function AlimentsPage() {
         <FoodSearchModal
           onAdd={(item) => { addItem(item); }}
           onClose={() => setShowModal(false)}
+        />
+      )}
+
+      {showMultiScan && (
+        <MultiScanModal
+          onAdd={(item) => { addItem(item); }}
+          onClose={() => setShowMultiScan(false)}
         />
       )}
     </>
